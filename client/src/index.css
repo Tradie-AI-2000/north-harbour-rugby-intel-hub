@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 11% 98%; /* #F5F7FA */
+  --foreground: 215 25% 27%; /* #0F172A */
+  --muted: 210 11% 96%; /* #F1F5F9 */
+  --muted-foreground: 215 16% 47%; /* #64748B */
+  --popover: 0 0% 100%; /* #FFFFFF */
+  --popover-foreground: 215 25% 27%; /* #0F172A */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 215 25% 27%; /* #0F172A */
+  --border: 215 28% 17%; /* #E2E8F0 */
+  --input: 215 28% 17%; /* #E2E8F0 */
+  --primary: 346 77% 34%; /* #971d32 - North Harbour Red */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 210 11% 96%; /* #F1F5F9 */
+  --secondary-foreground: 215 25% 27%; /* #0F172A */
+  --accent: 210 11% 96%; /* #F1F5F9 */
+  --accent-foreground: 215 25% 27%; /* #0F172A */
+  --destructive: 0 84.2% 60.2%; /* #EF4444 */
+  --destructive-foreground: 60 9.1% 97.8%; /* #FEFEFE */
+  --ring: 346 77% 34%; /* #971d32 */
+  --radius: 0.5rem;
+  --chart-1: 346 77% 34%; /* #971d32 - North Harbour Red */
+  --chart-2: 142 76% 36%; /* #10B981 - North Harbour Green */
+  --chart-3: 45 93% 47%; /* #F59E0B - North Harbour Amber */
+  --chart-4: 0 84% 60%; /* #EF4444 - Red */
+  --chart-5: 263 70% 50%; /* #8B5CF6 - Purple */
+  
+  /* North Harbour Rugby custom colors */
+  --nh-red: 346 77% 34%; /* #971d32 */
+  --nh-navy: 215 25% 27%; /* #0F172A */
+  --nh-green: 142 76% 36%; /* #10B981 */
+  --nh-amber: 45 93% 47%; /* #F59E0B */
+}
+
+.dark {
+  --background: 215 28% 17%; /* #1E293B */
+  --foreground: 210 20% 98%; /* #F8FAFC */
+  --muted: 215 32% 27%; /* #334155 */
+  --muted-foreground: 215 20% 65%; /* #94A3B8 */
+  --popover: 215 28% 17%; /* #1E293B */
+  --popover-foreground: 210 20% 98%; /* #F8FAFC */
+  --card: 215 28% 17%; /* #1E293B */
+  --card-foreground: 210 20% 98%; /* #F8FAFC */
+  --border: 215 32% 27%; /* #334155 */
+  --input: 215 32% 27%; /* #334155 */
+  --primary: 346 77% 34%; /* #971d32 - North Harbour Red */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 215 32% 27%; /* #334155 */
+  --secondary-foreground: 210 20% 98%; /* #F8FAFC */
+  --accent: 215 32% 27%; /* #334155 */
+  --accent-foreground: 210 20% 98%; /* #F8FAFC */
+  --destructive: 0 62.8% 30.6%; /* #DC2626 */
+  --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+  --ring: 346 77% 34%; /* #971d32 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-nh-red {
+    color: hsl(var(--nh-red));
+  }
+  
+  .text-nh-navy {
+    color: hsl(var(--nh-navy));
+  }
+  
+  .text-nh-green {
+    color: hsl(var(--nh-green));
+  }
+  
+  .text-nh-amber {
+    color: hsl(var(--nh-amber));
+  }
+  
+  .bg-nh-red {
+    background-color: hsl(var(--nh-red));
+  }
+  
+  .bg-nh-navy {
+    background-color: hsl(var(--nh-navy));
+  }
+  
+  .bg-nh-green {
+    background-color: hsl(var(--nh-green));
+  }
+  
+  .bg-nh-amber {
+    background-color: hsl(var(--nh-amber));
+  }
+  
+  .border-nh-red {
+    border-color: hsl(var(--nh-red));
+  }
+  
+  /* North Harbour branded header */
+  .nh-header {
+    background: hsl(var(--nh-red));
+    color: white;
+  }
+}
