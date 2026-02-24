@@ -1130,6 +1130,9 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const playersRelations = relations(players, ({ many }) => ({
   matchPerformances: many(matchPerformances),
+  headInjuryIncidents: many(headInjuryIncidents),
+  concussionAssessments: many(concussionAssessments),
+  rtpProtocols: many(rtpProtocols),
 }));
 
 export const matchPerformancesRelations = relations(matchPerformances, ({ one }) => ({
@@ -1141,6 +1144,147 @@ export const matchSummariesRelations = relations(matchSummaries, ({ many }) => (
   performances: many(matchPerformances),
 }));
 
+// Head Injury & Concussion Management Tables
+export const headInjuryIncidents = pgTable("head_injury_incidents", {
+  id: text("id").primaryKey(),
+  playerId: text("player_id").notNull().references(() => players.id),
+  dateTime: timestamp("date_time", { withTimezone: true }).notNull(),
+  context: text("context", { enum: ['game', 'training'] }).notNull(),
+  contextDetails: text("context_details"),
+  mechanismOfInjury: text("mechanism_of_injury", { enum: [
+    'head_to_ground', 'head_to_shoulder', 'head_to_head', 'head_to_knee', 'whiplash', 'unknown', 'other'
+  ] }).notNull(),
+  mechanismDescription: text("mechanism_description"),
+  immediateSymptoms: jsonb("immediate_symptoms").notNull().$type<{
+    lossOfConsciousness: boolean;
+    seizure: boolean;
+    confusion: boolean;
+    unsteadiness: boolean;
+    dizziness: boolean;
+    nausea: boolean;
+    headache: boolean;
+    visualDisturbance: boolean;
+  }>(),
+  initialAction: jsonb("initial_action").notNull().$type<{
+    removedFromPlay: boolean;
+    hiaAdministered: boolean;
+    immediateAssessment: boolean;
+    hospitalReferral: boolean;
+  }>(),
+  reportedBy: text("reported_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const concussionAssessments = pgTable("concussion_assessments", {
+  id: text("id").primaryKey(),
+  playerId: text("player_id").notNull().references(() => players.id),
+  incidentId: text("incident_id").references(() => headInjuryIncidents.id),
+  assessmentType: text("assessment_type", { enum: ['baseline', 'hia', 'scat6', 'scat5', 'bess', 'daily_symptoms'] }).notNull(),
+  assessmentDate: timestamp("assessment_date", { withTimezone: true }).notNull(),
+  assessor: text("assessor").notNull(),
+  
+  // Assessment details stored as JSONB for flexibility
+  maddocksQuestions: jsonb("maddocks_questions").$type<{
+    whatGroundAreWeAt: boolean;
+    whichHalfIsIt: boolean;
+    whoScoredLast: boolean;
+    whatDidYouPlayLastWeek: boolean;
+    didYourTeamWinLastGame: boolean;
+    totalCorrect: number;
+  }>(),
+  scatSymptoms: jsonb("scat_symptoms").$type<{
+    symptomCount: number;
+    severityScore: number;
+    maxSeverity: number;
+  }>(),
+  scatCognitive: jsonb("scat_cognitive").$type<{
+    orientation: number;
+    immediateMemory: number;
+    concentration: number;
+    delayedRecall: number;
+    totalScore: number;
+  }>(),
+  bessBalance: jsonb("bess_balance").$type<{
+    doubleStance: number;
+    singleStance: number;
+    tandemStance: number;
+    totalErrors: number;
+  }>(),
+  dailySymptoms: jsonb("daily_symptoms").$type<{
+    symptoms: Record<string, number>;
+    totalScore: number;
+    symptomFree: boolean;
+  }>(),
+  
+  outcome: text("outcome", { enum: ['pass', 'fail', 'refer', 'monitoring'] }).notNull(),
+  notes: text("notes"),
+  recommendations: text("recommendations"),
+  nextAssessmentDate: timestamp("next_assessment_date", { withTimezone: true }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const rtpProtocols = pgTable("rtp_protocols", {
+  id: text("id").primaryKey(),
+  playerId: text("player_id").notNull().references(() => players.id),
+  incidentId: text("incident_id").notNull().references(() => headInjuryIncidents.id),
+  currentStage: text("current_stage", { enum: ['stage_1', 'stage_2', 'stage_3', 'stage_4', 'stage_5', 'stage_6', 'cleared'] }).notNull(),
+  stageStartDate: timestamp("stage_start_date", { withTimezone: true }).notNull(),
+  
+  stageHistory: jsonb("stage_history").notNull().$type<Array<{
+    stage: string;
+    startDate: string;
+    endDate?: string;
+    successful: boolean;
+    notes?: string;
+    supervisionBy: string;
+  }>>(),
+  
+  minimumDurationHours: integer("minimum_duration_hours").notNull(),
+  symptomFreeRequired: boolean("symptom_free_required").notNull(),
+  
+  autoProgressionEnabled: boolean("auto_progression_enabled").default(true),
+  manualOverride: jsonb("manual_override").$type<{
+    reason: string;
+    authorizedBy: string;
+    timestamp: string;
+  }>(),
+  
+  alerts: jsonb("alerts").default('[]').$type<Array<{
+    type: string;
+    message: string;
+    severity: string;
+    timestamp: string;
+  }>>(),
+  
+  finalClearance: jsonb("final_clearance").$type<{
+    cleared: boolean;
+    clearanceDate: string;
+    clearedBy: string;
+    returnToPlayDate: string;
+  }>(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const headInjuryIncidentsRelations = relations(headInjuryIncidents, ({ one, many }) => ({
+  player: one(players, { fields: [headInjuryIncidents.playerId], references: [players.id] }),
+  assessments: many(concussionAssessments),
+  rtpProtocol: one(rtpProtocols, { fields: [headInjuryIncidents.id], references: [rtpProtocols.incidentId] }),
+}));
+
+export const concussionAssessmentsRelations = relations(concussionAssessments, ({ one }) => ({
+  player: one(players, { fields: [concussionAssessments.playerId], references: [players.id] }),
+  incident: one(headInjuryIncidents, { fields: [concussionAssessments.incidentId], references: [headInjuryIncidents.id] }),
+}));
+
+export const rtpProtocolsRelations = relations(rtpProtocols, ({ one }) => ({
+  player: one(players, { fields: [rtpProtocols.playerId], references: [players.id] }),
+  incident: one(headInjuryIncidents, { fields: [rtpProtocols.incidentId], references: [headInjuryIncidents.id] }),
+}));
+
 // Database types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -1150,12 +1294,21 @@ export type MatchPerformance = typeof matchPerformances.$inferSelect;
 export type InsertMatchPerformance = typeof matchPerformances.$inferInsert;
 export type MatchSummary = typeof matchSummaries.$inferSelect;
 export type InsertMatchSummary = typeof matchSummaries.$inferInsert;
+export type HeadInjuryIncident = typeof headInjuryIncidents.$inferSelect;
+export type InsertHeadInjuryIncident = typeof headInjuryIncidents.$inferInsert;
+export type ConcussionAssessment = typeof concussionAssessments.$inferSelect;
+export type InsertConcussionAssessment = typeof concussionAssessments.$inferInsert;
+export type RTPProtocol = typeof rtpProtocols.$inferSelect;
+export type InsertRTPProtocol = typeof rtpProtocols.$inferInsert;
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertPlayerSchema = createInsertSchema(players);
 export const insertMatchPerformanceSchema = createInsertSchema(matchPerformances);
 export const insertMatchSummarySchema = createInsertSchema(matchSummaries);
+export const insertHeadInjuryIncidentSchema = createInsertSchema(headInjuryIncidents);
+export const insertConcussionAssessmentSchema = createInsertSchema(concussionAssessments);
+export const insertRTPProtocolSchema = createInsertSchema(rtpProtocols);
 
 // Legacy Zod schemas for backwards compatibility  
 export type PlayerZod = z.infer<typeof playerSchema>;

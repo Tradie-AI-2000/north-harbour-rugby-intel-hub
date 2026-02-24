@@ -1,0 +1,33 @@
+{
+  "repository_type": "multi-part",
+  "parts": [
+    {
+      "part_id": "client",
+      "root_path": "client",
+      "project_type_id": "web",
+      "display_name": "Frontend Client",
+      "tech_stack": "React 18, Vite, Wouter, Radix UI, Tailwind CSS"
+    },
+    {
+      "part_id": "server",
+      "root_path": "server",
+      "project_type_id": "backend",
+      "display_name": "Backend API Server",
+      "tech_stack": "Node.js, Express.js, TypeScript, Drizzle ORM, PostgreSQL"
+    }
+  ],
+  "integration_points": [
+    {
+      "from": "client",
+      "to": "server",
+      "type": "REST API",
+      "details": "Client-initiated HTTP requests via TanStack Query to port 5000."
+    },
+    {
+      "from": "client",
+      "to": "server",
+      "type": "WebSocket",
+      "details": "Attempts to connect to /ws for real-time updates (HMR/Experimental)."
+    }
+  ]
+}
